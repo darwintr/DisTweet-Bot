@@ -8,6 +8,7 @@ const HOST = '10.16.185.66';
 const PORT = '5000';
 
 var client = new net.Socket();
+var id;
 
 client.connect(PORT, HOST, () => {
 	console.log("CONNECTED TO : " + HOST + ":" + PORT);
@@ -17,7 +18,7 @@ bot.on('message', (message) => {
 
 	if (message.content == '!signup') {
 
-		register.signUp(message);
+		id = register.signUp(message);
 
 	} else if (message.content.startsWith('!m ')) {
 
@@ -25,7 +26,6 @@ bot.on('message', (message) => {
 		var name = message.content.split(' ')[1];
 
 		sendMessage('m', name, msg.trim());
-
 	} else if (message.content.startsWith('!r ')) {
 
 		var msgIndex = message.content.indexOf(' ');
@@ -38,14 +38,18 @@ bot.on('message', (message) => {
 
 client.on('data', (data) => {
 	console.log("RECIEVED : " + data);
-})
+	var message = JSON.parse(data.toString());
+	bot.fetchUser(id)
+		.then(user => user.sendMessage(message.name + " : " + message.message))
+		.catch(console.error);
+});
 
 function sendMessage(type, name, message) {
 
 	messageObj = {
 		type: type,
 		name: name,
-		message: message
+		content: message
 	};
 
 	var msgObjStr = JSON.stringify(messageObj);

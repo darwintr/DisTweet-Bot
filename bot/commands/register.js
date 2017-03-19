@@ -12,10 +12,12 @@ module.exports =  {
 			author.sendMessage(
 						"Hi, you have been registered for Facebook messaging."
 					);
+			return signedUp.id;
 		} else {
 			author.sendMessage(
 					"You are already signed up."
 				);
+			return;
 		}
 
 	}
