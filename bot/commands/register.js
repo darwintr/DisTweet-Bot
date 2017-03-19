@@ -10,7 +10,7 @@ module.exports =  {
 			console.log(message.author.id + ": " + message.author.username + " has been registered");
 			signedUp.id = id;
 			author.sendMessage(
-						"Hi, you have been registered for Facebook messaging."
+						"Hi, you have been registered for Facecord messaging."
 					);
 			return signedUp.id;
 		} else {

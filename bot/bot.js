@@ -10,6 +10,7 @@ const PORT = '5000';
 var client = new net.Socket();
 var id;
 
+
 client.connect(PORT, HOST, () => {
 	console.log("CONNECTED TO : " + HOST + ":" + PORT);
 });
@@ -21,17 +22,32 @@ bot.on('message', (message) => {
 		id = register.signUp(message);
 
 	} else if (message.content.startsWith('!m ')) {
+		if (id) {
 
-		var msg = getMessageContent(message.content);
-		var name = message.content.split(' ')[1];
+			var msg = getMessageContent(message.content);
+			var name = message.content.split(' ')[1];
+			sendMessage('m', name, msg.trim());
 
-		sendMessage('m', name, msg.trim());
+		} else {
+
+			message.author.reply("Please use !signup before using" +
+				" the other commands");
+
+		}
+
 	} else if (message.content.startsWith('!r ')) {
+		if (id) {
 
-		var msgIndex = message.content.indexOf(' ');
-		var msg = message.content.substring(msgIndex).trim();
+			var msgIndex = message.content.indexOf(' ');
+			var msg = message.content.substring(msgIndex).trim();
+			sendMessage('r', '', msg);
 
-		sendMessage('r', '', msg);
+		}else {
+
+			message.author.reply("Please use !signup before using" +
+				" the other commands");
+
+		}
 	}
 
 });
@@ -39,9 +55,12 @@ bot.on('message', (message) => {
 client.on('data', (data) => {
 	console.log("RECIEVED : " + data);
 	var message = JSON.parse(data.toString());
-	bot.fetchUser(id)
-		.then(user => user.sendMessage(message.name + " : " + message.message))
-		.catch(console.error);
+	if (id) {
+		bot.fetchUser(id)
+			.then(user => user.sendMessage("**" + message.name + "** : " + message.message))
+			.catch(console.error);
+	}
+
 });
 
 function sendMessage(type, name, message) {
