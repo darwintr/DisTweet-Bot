@@ -1,2 +1,4 @@
-# FaceCord Bot
-A Facebook messaging bot for Discord
+# DisTweet Bot
+Your Twitter feed, but now on Discord
+
+bonus: Facebook messaging
