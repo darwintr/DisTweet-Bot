@@ -6,6 +6,7 @@
     "start": "node FaceBookThing.js"
   },
   "dependencies": {
+    "discord.js": "^11.0.0",
     "facebook-chat-api": "~1.2.0",
     "q": "^1.4.1"
   }
