@@ -81,3 +81,5 @@ sysinfo.txt
 # Builds
 *.apk
 *.unitypackage
+
+./bot/key.js

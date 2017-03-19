@@ -3,7 +3,7 @@ const Discord = require('discord.js');
 var register = require('./commands/register.js');
 var net = require('net');
 const bot = new Discord.Client();
-const key = require('key');
+const key = require('./key.js');
 
 const HOST = '10.16.185.66';
 const PORT = '5000';
@@ -11,6 +11,7 @@ const MAX_TWEETS = 20;
 
 var client = new net.Socket();
 var id = 0;
+var recieveTweets = false;
 
 var tweetBuffer = [];
 var currTweetCount = 0;
@@ -39,7 +40,7 @@ bot.on('message', (message) => {
 			var name = message.content.split(' ')[1];
 			sendMessage('m', name, msg.trim());
 		} else {
-			message.author.reply("Please use !signup before using" +
+			message.reply("Please use !signup before using" +
 				" the other commands");
 		}
 
@@ -54,18 +55,40 @@ bot.on('message', (message) => {
 
 		} else {
 
-			message.author.reply("Please use !signup before using" +
+			message.reply("Please use !signup before using" +
 				" the other commands");
 
 		}
+	} else if (message.content == '!signout') {
+		id = 0;
+		register.signOut(message);
+		client.destroy();
+
+	} else if (message.content == "!starttweets") {
+		console.log("STARTING TO RECIEVE TWEETS");
+		recieveTweets = true;
+
+	} else if (message.content == "!endtweets") {
+		console.log("STOPPING TWEETS");
+		recieveTweets = false;
+
+	} else if (message.content == '!help') {
+		message.reply("Available commands:\n" +
+			"!signup\n" +
+			"!signout\n" +
+			"!starttweets\n" +
+			"!endtweets\n" +
+			"!m [name] [message]\n" +
+			"!r [message]");
 	}
+
 });
 
 client.on('data', (data) => {
 	console.log("RECIEVED : " + data);
 	var message = JSON.parse(data.toString());
 
-	if (id) {
+	if (recieveTweets) {
 		var prefix = getPrefix(message);
 		bot.fetchUser(id)
 			.then((user) => {
@@ -95,11 +118,13 @@ function cacheTweet(message) {
 
 function dumpBuffer(user) {
 	// Send every message in the buffer
+	user.sendMessage("**--------------- WHILE YOU WERE GONE ---------------**\n\n");
 	for (message of tweetBuffer) {
 		prefix = getPrefix(message);
 		user.sendMessage("**" + prefix + message.name + "** : "
 			+ message.message);
 	}
+	user.sendMessage("** --------------- END OF BUFFER --------------- **");
 	tweetBuffer = [];
 }
 
