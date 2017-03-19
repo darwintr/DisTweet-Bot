@@ -6,10 +6,13 @@ const bot = new Discord.Client();
 
 const HOST = '10.16.185.66';
 const PORT = '5000';
+const MAX_TWEETS = 20;
 
 var client = new net.Socket();
 var id;
 
+var tweetBuffer = [];
+var currTweetCount = 0;
 
 client.connect(PORT, HOST, () => {
 	console.log("CONNECTED TO : " + HOST + ":" + PORT);
@@ -42,7 +45,7 @@ bot.on('message', (message) => {
 			var msg = message.content.substring(msgIndex).trim();
 			sendMessage('r', '', msg);
 
-		}else {
+		} else {
 
 			message.author.reply("Please use !signup before using" +
 				" the other commands");
@@ -55,22 +58,51 @@ bot.on('message', (message) => {
 client.on('data', (data) => {
 	console.log("RECIEVED : " + data);
 	var message = JSON.parse(data.toString());
-	if (id) {
-		bot.fetchUser(id)
-			.then(user => user.sendMessage("**" + message.name + "** : " + message.message))
-			.catch(console.error);
-	}
 
+	if (id) {
+		var prefix = getPrefix(message);
+		bot.fetchUser(id)
+			.then((user) => {
+
+				if (tweetBuffer.length > 0)
+					dumpBuffer(user);
+				user.sendMessage("**" + prefix + message.name + "** : "
+							+ message.message)
+			})
+			.catch(console.error);
+
+	} else {
+		cacheTweet(message);
+	}
 });
 
-function sendMessage(type, name, message) {
+function cacheTweet(message) {
+	if (currTweetCount >= MAX_TWEETS) {
+		currTweetCount = 0;
+	}
+	tweetBuffer[currTweetCount] = message;
+	currTweetCount += 1;
+}
 
+function dumpBuffer(user) {
+	for (message of tweetBuffer) {
+		prefix = getPrefix(message);
+		user.sendMessage("**" + prefix + message.name + "** : "
+			+ message.message);
+	}
+	tweetBuffer = [];
+}
+
+function getPrefix(message) {
+	return message.src == "twitter" ? "<TWITTER> " : "<FACEBOOK> ";
+}
+
+function sendMessage(type, name, message) {
 	messageObj = {
 		type: type,
 		name: name,
 		content: message
 	};
-
 	var msgObjStr = JSON.stringify(messageObj);
 	console.log("WROTE: " + msgObjStr + " TO " + HOST + ":" + PORT);
 	client.write(msgObjStr);
